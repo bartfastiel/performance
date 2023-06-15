@@ -1,16 +1,30 @@
 package org.example;
 
+import org.openjdk.jmh.annotations.*;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(time = 1, timeUnit = TimeUnit.SECONDS, iterations = 2)
+@Measurement(time = 1, timeUnit = TimeUnit.SECONDS, iterations = 10)
+@Fork(1)
 public class PerformanceExample {
-    public static void main(String[] args) {
-        int amountOfNumbers = 100_000_000;
+
+    public static void main(String[] args) throws Exception {
+        org.openjdk.jmh.Main.main(args);
+    }
+
+    @Benchmark
+    public static void run() {
+        int amountOfNumbers = 20_000_000;
 
         List<Integer> numbers = generateNumbers(amountOfNumbers);
         List<Integer> filteredNumbers = filterNumbers(numbers);
         int sum = calculateSum(filteredNumbers);
-        System.out.println("Sum: " + sum);
     }
 
     private static List<Integer> generateNumbers(int amountOfNumbers) {

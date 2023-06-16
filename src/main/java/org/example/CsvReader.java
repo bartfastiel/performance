@@ -37,16 +37,14 @@ public class CsvReader {
                 if (data[i] == '\n') {
                     commaCount = 0;
                     i += FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN;
-                } else if (data[i] == ',') {
-                    if (commaCount++ == COMMAS_BEFORE_BIRTH_DATE) {
-                        int month = (data[i + FIRST_CHAR_OF_MONTH_IN_DATE] - '0') * 10 +
-                                    (data[i + SECOND_CHAR_OF_MONTH_IN_DATE] - '0');
-                        int day = (data[i + FIRST_CHAR_OF_DAY_IN_DATE] - '0') * 10 +
-                                  (data[i + SECOND_CHAR_OF_DAY_IN_DATE] - '0');
-                        int calenderIndex = (month - 1) * 31 + (day - 1);
-                        personsPerBirthDay[calenderIndex]++;
-                        i += NUMBER_OF_CHARS_OF_DATE_AND_BEHIND;
-                    }
+                } else if (data[i] == ',' && commaCount++ == COMMAS_BEFORE_BIRTH_DATE) {
+                    int month = (data[i + FIRST_CHAR_OF_MONTH_IN_DATE] - '0') * 10 +
+                                (data[i + SECOND_CHAR_OF_MONTH_IN_DATE] - '0');
+                    int day = (data[i + FIRST_CHAR_OF_DAY_IN_DATE] - '0') * 10 +
+                              (data[i + SECOND_CHAR_OF_DAY_IN_DATE] - '0');
+                    int calenderIndex = (month - 1) * 31 + (day - 1);
+                    personsPerBirthDay[calenderIndex]++;
+                    i += NUMBER_OF_CHARS_OF_DATE_AND_BEHIND;
                 }
             }
         } catch (IOException e) {

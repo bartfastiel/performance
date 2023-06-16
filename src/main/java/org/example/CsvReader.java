@@ -51,10 +51,11 @@ public class CsvReader {
             persons.add(p);
             for (List<String> record2 : records) {
                 int numberOfPersonsWithSameBirthDate = 0;
+                LocalDate parsed = LocalDate.parse(record2.get(7));
                 if(
-                        p.dateOfBirth().getDayOfMonth() == LocalDate.parse(record2.get(7)).getDayOfMonth()
+                        p.dateOfBirth().getDayOfMonth() == parsed.getDayOfMonth()
                         &&
-                        p.dateOfBirth().getMonthValue() == LocalDate.parse(record2.get(7)).getMonthValue()
+                        p.dateOfBirth().getMonthValue() == parsed.getMonthValue()
                 )
                 {
                     numberOfPersonsWithSameBirthDate++;

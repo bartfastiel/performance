@@ -23,17 +23,12 @@ public class CsvReader {
     public static void run() {
         List<List<String>> records = readCsvData();
         List<String> titles = records.remove(0);
-        List<Person> persons = new ArrayList<>();
-        Map<Person, Integer> partyFriends = new HashMap<>();
-        String biggestParty = getMaximumPartyFriends(records, persons, partyFriends);
+        String biggestParty = getMaximumPartyFriends(records);
         // System.out.println("Biggest party is on " + biggestParty);
     }
 
-    private static String getMaximumPartyFriends(List<List<String>> records, List<Person> persons, Map<Person, Integer> partyFriends) {
-        List<Person>[] personsPerBirthDay = new List[12 * 31];
-        for (int i = 0; i < personsPerBirthDay.length; i++) {
-            personsPerBirthDay[i] = new ArrayList<>();
-        }
+    private static String getMaximumPartyFriends(List<List<String>> records) {
+        int[] personsPerBirthDay = new int[12 * 31];
 
         int maximumPartyFriends = 0;
         String winner = null;
@@ -44,26 +39,11 @@ public class CsvReader {
             int day = Integer.parseInt(birthDate.substring(8));
             int calenderIndex = (month - 1) * 31 + (day - 1);
 
-            Person p = new Person(
-                    record.get(0),
-                    record.get(1),
-                    record.get(2),
-                    record.get(3),
-                    record.get(4),
-                    record.get(5),
-                    record.get(6),
-                    birthDate,
-                    record.get(8)
-            );
-            persons.add(p);
+            personsPerBirthDay[calenderIndex]++;
 
-            List<Person> partyPersons = personsPerBirthDay[calenderIndex];
-            partyPersons.add(p);
-
-            if (maximumPartyFriends < partyPersons.size()) {
-                maximumPartyFriends = partyPersons.size();
-                String monthDay = record.get(7).substring(5);
-                winner = monthDay;
+            if (maximumPartyFriends < personsPerBirthDay[calenderIndex]) {
+                maximumPartyFriends = personsPerBirthDay[calenderIndex];
+                winner = record.get(7).substring(5);
             }
         }
         return winner;

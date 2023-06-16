@@ -29,12 +29,11 @@ public class CsvReader {
                     commaCount = 0;
                 } else if (data[i] == ',') {
                     if (commaCount++ == 6) {
-                        i += 6;
-                        int month = (data[i++] - '0') * 10 + (data[i++] - '0');
-                        i++;
-                        int day = (data[i++] - '0') * 10 + (data[i++] - '0');
+                        int month = (data[i+6] - '0') * 10 + (data[i+7] - '0');
+                        int day = (data[i+9] - '0') * 10 + (data[i+10] - '0');
                         int calenderIndex = (month - 1) * 31 + (day - 1);
                         personsPerBirthDay[calenderIndex]++;
+                        i += 13;
                     }
                 }
             }

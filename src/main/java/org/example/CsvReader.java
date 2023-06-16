@@ -2,8 +2,7 @@ package org.example;
 
 import org.openjdk.jmh.annotations.*;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
@@ -16,44 +15,40 @@ public class CsvReader {
 
     public static void main(String[] args) throws IOException {
         org.openjdk.jmh.Main.main(new String[]{"org.example.CsvReader"});
-        // run();
+        //System.out.println(run());
     }
 
     @Benchmark
     public static String run() {
         int[] personsPerBirthDay = new int[12 * 31];
-
-        int maximumPartyFriends = 0;
-        char[] winner = null;
-
-        try (BufferedReader br = new BufferedReader(new FileReader("people-2000000.csv"), 1024 * 1024 * 300)) {
-            br.readLine();
-
-            int commaCount = 0;
-            char[] dateCharsBuffer = new char[5];
-
-            int charRead;
-            while ((charRead = br.read()) != -1) {
-                if (charRead == '\n') {
+        try (var r = new FileInputStream("people-2000000.csv")) {
+            byte[] data = r.readAllBytes();
+            int commaCount = -100;
+            for (int i = 0; i < data.length; i++) {
+                if (data[i] == '\n') {
                     commaCount = 0;
-                } else if (charRead == ',') {
-                    if (++commaCount == 7) {
-                        br.skip(5);
-                        br.read(dateCharsBuffer, 0, 5);
-                        int month = (dateCharsBuffer[0] - '0') * 10 + (dateCharsBuffer[1] - '0');
-                        int day = (dateCharsBuffer[3] - '0') * 10 + (dateCharsBuffer[4] - '0');
+                } else if (data[i] == ',') {
+                    if (commaCount++ == 6) {
+                        i += 6;
+                        int month = (data[i++] - '0') * 10 + (data[i++] - '0');
+                        i++;
+                        int day = (data[i++] - '0') * 10 + (data[i++] - '0');
                         int calenderIndex = (month - 1) * 31 + (day - 1);
                         personsPerBirthDay[calenderIndex]++;
-                        if (maximumPartyFriends < personsPerBirthDay[calenderIndex]) {
-                            maximumPartyFriends = personsPerBirthDay[calenderIndex];
-                            winner = dateCharsBuffer;
-                        }
                     }
                 }
             }
         } catch (IOException e) {
             throw new NoSuchElementException("Cannot read CSV file", e);
         }
-        return new String(winner);
+        int max = 0;
+        int maxIndex = 0;
+        for (int i = 0; i < personsPerBirthDay.length; i++) {
+            if (personsPerBirthDay[i] > max) {
+                max = personsPerBirthDay[i];
+                maxIndex = i;
+            }
+        }
+        return "Most popular birthday is " + (maxIndex / 31 + 1) + "/" + (maxIndex % 31 + 1) + " with " + max + " people";
     }
 }

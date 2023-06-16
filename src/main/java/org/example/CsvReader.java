@@ -1,18 +1,15 @@
 package org.example;
 
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.openjdk.jmh.annotations.*;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipFile;
 
 @BenchmarkMode(Mode.AverageTime)
 @Warmup(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
@@ -21,7 +18,7 @@ import java.util.zip.ZipFile;
 public class CsvReader {
 
     public static void main(String[] args) throws IOException {
-        org.openjdk.jmh.Main.main(new String[] {"org.example.CsvReader"});
+        org.openjdk.jmh.Main.main(new String[]{"org.example.CsvReader"});
         //run();
     }
 
@@ -36,7 +33,7 @@ public class CsvReader {
     }
 
     private static String getMaximumPartyFriends(List<List<String>> records, List<Person> persons, Map<Person, Integer> partyFriends) {
-        List<Person>[] personsPerBirthDay = new List[12*31];
+        List<Person>[] personsPerBirthDay = new List[12 * 31];
         for (int i = 0; i < personsPerBirthDay.length; i++) {
             personsPerBirthDay[i] = new ArrayList<>();
         }
@@ -76,24 +73,27 @@ public class CsvReader {
     }
 
     private static List<List<String>> readCsvData() {
-        String zipFilePath = "people-2000000.csv.zip";
+        String zipFilePath = "people-2000000.zip";
         String textFileName = "people-2000000.csv";
 
         List<List<String>> records = new ArrayList<>();
 
-        try (ZipFile zipFile = new ZipFile(zipFilePath);
-             FileSystem fileSystem = FileSystems.newFileSystem(Path.of(zipFilePath), (ClassLoader) null)) {
+        try (ZipFile zipFile = new ZipFile(zipFilePath)) {
+            ZipArchiveEntry entry = zipFile.getEntry(textFileName);
 
-            Path textFilePath = fileSystem.getPath(textFileName);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(Files.newInputStream(textFilePath)));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] values = line.split(",");
-                records.add(Arrays.asList(values));
+            if (entry != null) {
+                try (InputStream is = zipFile.getInputStream(entry);
+                     InputStreamReader isr = new InputStreamReader(is);
+                     BufferedReader reader = new BufferedReader(isr)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        String[] values = line.split(",");
+                        records.add(Arrays.asList(values));
+                    }
+                }
+            } else {
+                System.out.println("Text file not found in the ZIP file.");
             }
-
-            reader.close();
         } catch (IOException e) {
             throw new NoSuchElementException("Cannot read CSV file", e);
         }

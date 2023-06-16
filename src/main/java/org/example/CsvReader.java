@@ -5,12 +5,17 @@ import org.openjdk.jmh.annotations.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
-@Warmup(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 50, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(1)
 public class CsvReader {
 
@@ -22,7 +27,6 @@ public class CsvReader {
     @Benchmark
     public static String run() {
         List<List<String>> records = readCsvData();
-        List<String> titles = records.remove(0);
         String biggestParty = getMaximumPartyFriends(records);
         return biggestParty;
         // System.out.println("Biggest party is on " + biggestParty);
@@ -51,9 +55,54 @@ public class CsvReader {
     }
 
     private static List<List<String>> readCsvData() {
+        return readCsvDataBufferedOld();
+    }
+
+    /**
+     * Benchmark      Mode  Cnt  Score   Error  Units
+     * CsvReader.run  avgt   50  1,198 ± 0,018   s/op
+     */
+    private static List<List<String>> readCsvDataNioAllLines() {
+        try {
+            return Files.readAllLines(Path.of("people-2000000.csv"))
+                    .stream()
+                    .skip(1)
+                    .map(line -> Arrays.asList(line.split(",")))
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot read CSV", e);
+        }
+    }
+
+
+    /**
+     * Benchmark      Mode  Cnt  Score   Error  Units
+     * CsvReader.run  avgt   50  1,215 ± 0,019   s/op
+     */
+    private static List<List<String>> readCsvDataBigBuffer() {
+        List<List<String>> records = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader("people-2000000.csv"), 1024 * 1024 * 300)) {
+            String line;
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                records.add(Arrays.asList(values));
+            }
+        } catch (IOException e) {
+            throw new NoSuchElementException("Cannot read CSV file", e);
+        }
+        return records;
+    }
+
+    /**
+     * Benchmark      Mode  Cnt  Score   Error  Units
+     * CsvReader.run  avgt   50  1,201 ± 0,021   s/op
+     */
+    private static List<List<String>> readCsvDataBufferedOld() {
         List<List<String>> records = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader("people-2000000.csv"))) {
             String line;
+            br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
                 records.add(Arrays.asList(values));

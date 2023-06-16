@@ -20,10 +20,11 @@ public class CsvReader {
     }
 
     @Benchmark
-    public static void run() {
+    public static String run() {
         List<List<String>> records = readCsvData();
         List<String> titles = records.remove(0);
         String biggestParty = getMaximumPartyFriends(records);
+        return biggestParty;
         // System.out.println("Biggest party is on " + biggestParty);
     }
 

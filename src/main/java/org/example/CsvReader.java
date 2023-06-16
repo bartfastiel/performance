@@ -1,13 +1,10 @@
 package org.example;
 
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.openjdk.jmh.annotations.*;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -73,26 +70,12 @@ public class CsvReader {
     }
 
     private static List<List<String>> readCsvData() {
-        String zipFilePath = "people-2000000.zip";
-        String textFileName = "people-2000000.csv";
-
         List<List<String>> records = new ArrayList<>();
-
-        try (ZipFile zipFile = new ZipFile(zipFilePath)) {
-            ZipArchiveEntry entry = zipFile.getEntry(textFileName);
-
-            if (entry != null) {
-                try (InputStream is = zipFile.getInputStream(entry);
-                     InputStreamReader isr = new InputStreamReader(is);
-                     BufferedReader reader = new BufferedReader(isr)) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        String[] values = line.split(",");
-                        records.add(Arrays.asList(values));
-                    }
-                }
-            } else {
-                System.out.println("Text file not found in the ZIP file.");
+        try (BufferedReader br = new BufferedReader(new FileReader("people-2000000.csv"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                records.add(Arrays.asList(values));
             }
         } catch (IOException e) {
             throw new NoSuchElementException("Cannot read CSV file", e);

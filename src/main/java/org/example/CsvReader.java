@@ -18,6 +18,7 @@ public class CsvReader {
 
     public static void main(String[] args) throws IOException {
         org.openjdk.jmh.Main.main(new String[] {"org.example.CsvReader"});
+        //run();
     }
 
     @Benchmark
@@ -31,11 +32,20 @@ public class CsvReader {
     }
 
     private static String getMaximumPartyFriends(List<List<String>> records, List<Person> persons, Map<Person, Integer> partyFriends) {
-        Map<String, List<Person>> personsPerBirthDay = new HashMap<>(366);
+        List<Person>[] personsPerBirthDay = new List[12*31];
+        for (int i = 0; i < personsPerBirthDay.length; i++) {
+            personsPerBirthDay[i] = new ArrayList<>();
+        }
+
         int maximumPartyFriends = 0;
         String winner = null;
         for (List<String> record : records) {
-            String monthDay = record.get(7).substring(5);
+
+            String birthDate = record.get(7);
+            int month = Integer.parseInt(birthDate.substring(5, 7));
+            int day = Integer.parseInt(birthDate.substring(8));
+            int calenderIndex = (month - 1) * 31 + (day - 1);
+
             Person p = new Person(
                     record.get(0),
                     record.get(1),
@@ -44,16 +54,17 @@ public class CsvReader {
                     record.get(4),
                     record.get(5),
                     record.get(6),
-                    monthDay,
+                    birthDate,
                     record.get(8)
             );
             persons.add(p);
 
-            List<Person> partyPersons = personsPerBirthDay.computeIfAbsent(monthDay, k -> new ArrayList<>());
+            List<Person> partyPersons = personsPerBirthDay[calenderIndex];
             partyPersons.add(p);
 
             if (maximumPartyFriends < partyPersons.size()) {
                 maximumPartyFriends = partyPersons.size();
+                String monthDay = record.get(7).substring(5);
                 winner = monthDay;
             }
         }

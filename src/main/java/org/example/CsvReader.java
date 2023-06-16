@@ -63,24 +63,30 @@ public class CsvReader {
     private static int[] createHistogram(byte[] data, int chunkStart, int approximateChunkSize) {
         int[] personsPerBirthDay = new int[12 * 31];
         int commaCount = 0;
-        for (int i = chunkStart + CHARACTERS_IN_TITLE + FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN; i < data.length; ) {
-            if (data[i] == '\n') {
-                if (i > chunkStart + approximateChunkSize) {
+        int approximateChunkEnd = chunkStart + approximateChunkSize;
+        int dataLength = data.length;
+        int i = chunkStart + CHARACTERS_IN_TITLE + FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN;
+        while (i < dataLength) {
+            if (data[i] == ',') {
+                if (commaCount++ == COMMAS_BEFORE_BIRTH_DATE) {
+                    int month = (data[i + FIRST_CHAR_OF_MONTH_IN_DATE] - '0') * 10 +
+                                (data[i + SECOND_CHAR_OF_MONTH_IN_DATE] - '0');
+                    int day = (data[i + FIRST_CHAR_OF_DAY_IN_DATE] - '0') * 10 +
+                              (data[i + SECOND_CHAR_OF_DAY_IN_DATE] - '0');
+                    int calenderIndex = (month - 1) * 31 + (day - 1);
+                    personsPerBirthDay[calenderIndex]++;
+                    i += NUMBER_OF_CHARS_OF_DATE_AND_BEHIND;
+                    continue;
+                }
+            } else if (data[i] == '\n') {
+                if (i > approximateChunkEnd) {
                     break;
                 }
                 commaCount = 0;
                 i += FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN + 1;
-            } else if (data[i] == ',' && commaCount++ == COMMAS_BEFORE_BIRTH_DATE) {
-                int month = (data[i + FIRST_CHAR_OF_MONTH_IN_DATE] - '0') * 10 +
-                            (data[i + SECOND_CHAR_OF_MONTH_IN_DATE] - '0');
-                int day = (data[i + FIRST_CHAR_OF_DAY_IN_DATE] - '0') * 10 +
-                          (data[i + SECOND_CHAR_OF_DAY_IN_DATE] - '0');
-                int calenderIndex = (month - 1) * 31 + (day - 1);
-                personsPerBirthDay[calenderIndex]++;
-                i += NUMBER_OF_CHARS_OF_DATE_AND_BEHIND;
-            } else {
-                i++;
+                continue;
             }
+            i++;
         }
         return personsPerBirthDay;
     }

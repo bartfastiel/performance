@@ -2,12 +2,16 @@ package org.example;
 
 import org.openjdk.jmh.annotations.*;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipFile;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -72,13 +76,24 @@ public class CsvReader {
     }
 
     private static List<List<String>> readCsvData() {
+        String zipFilePath = "people-2000000.csv.zip";
+        String textFileName = "people-2000000.csv";
+
         List<List<String>> records = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader("people-2000000.csv"))) {
+
+        try (ZipFile zipFile = new ZipFile(zipFilePath);
+             FileSystem fileSystem = FileSystems.newFileSystem(Path.of(zipFilePath), (ClassLoader) null)) {
+
+            Path textFilePath = fileSystem.getPath(textFileName);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(Files.newInputStream(textFilePath)));
+
             String line;
-            while ((line = br.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 String[] values = line.split(",");
                 records.add(Arrays.asList(values));
             }
+
+            reader.close();
         } catch (IOException e) {
             throw new NoSuchElementException("Cannot read CSV file", e);
         }

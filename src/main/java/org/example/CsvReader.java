@@ -5,8 +5,6 @@ import org.openjdk.jmh.annotations.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.MonthDay;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class CsvReader {
 
     public static void main(String[] args) throws IOException {
-        org.openjdk.jmh.Main.main(args);
+        org.openjdk.jmh.Main.main(new String[] {"org.example.CsvReader"});
     }
 
     @Benchmark
@@ -26,16 +24,16 @@ public class CsvReader {
         List<String> titles = records.remove(0);
         List<Person> persons = new ArrayList<>();
         Map<Person, Integer> partyFriends = new HashMap<>();
-        MonthDay biggestParty = getMaximumPartyFriends(records, persons, partyFriends);
+        String biggestParty = getMaximumPartyFriends(records, persons, partyFriends);
         // System.out.println("Biggest party is on " + biggestParty);
     }
 
-    private static MonthDay getMaximumPartyFriends(List<List<String>> records, List<Person> persons, Map<Person, Integer> partyFriends) {
-        Map<MonthDay, List<Person>> personsPerBirthDay = new HashMap<>();
+    private static String getMaximumPartyFriends(List<List<String>> records, List<Person> persons, Map<Person, Integer> partyFriends) {
+        Map<String, List<Person>> personsPerBirthDay = new HashMap<>();
         int maximumPartyFriends = 0;
-        MonthDay winner = null;
+        String winner = null;
         for (List<String> record : records) {
-            LocalDate birthDate = LocalDate.parse(record.get(7));
+            String monthDay = record.get(7).substring(5);
             Person p = new Person(
                     record.get(0),
                     record.get(1),
@@ -44,11 +42,10 @@ public class CsvReader {
                     record.get(4),
                     record.get(5),
                     record.get(6),
-                    birthDate,
+                    monthDay,
                     record.get(8)
             );
             persons.add(p);
-            MonthDay monthDay = MonthDay.from(birthDate);
 
             List<Person> partyPersons = personsPerBirthDay.computeIfAbsent(monthDay, k -> new ArrayList<>());
             partyPersons.add(p);

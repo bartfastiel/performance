@@ -10,7 +10,7 @@ public record Person(
         String sex,
         String email,
         String phone,
-        LocalDate dateOfBirth,
+        String birthday,
         String jobTitle
 ) {
 }

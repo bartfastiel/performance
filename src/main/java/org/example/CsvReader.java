@@ -15,6 +15,12 @@ public class CsvReader {
 
     public static final int CHARACTERS_IN_TITLE = 76;
     public static final int FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN = 15;
+    public static final int COMMAS_BEFORE_BIRTH_DATE = 5;
+    public static final int FIRST_CHAR_OF_MONTH_IN_DATE = 6;
+    public static final int SECOND_CHAR_OF_MONTH_IN_DATE = 7;
+    public static final int FIRST_CHAR_OF_DAY_IN_DATE = 9;
+    public static final int SECOND_CHAR_OF_DAY_IN_DATE = 10;
+    public static final int NUMBER_OF_CHARS_OF_DATE_AND_BEHIND = 13;
 
     public static void main(String[] args) throws IOException {
         org.openjdk.jmh.Main.main(new String[]{"org.example.CsvReader"});
@@ -32,12 +38,14 @@ public class CsvReader {
                     commaCount = 0;
                     i += FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN;
                 } else if (data[i] == ',') {
-                    if (commaCount++ == 5) {
-                        int month = (data[i + 6] - '0') * 10 + (data[i + 7] - '0');
-                        int day = (data[i + 9] - '0') * 10 + (data[i + 10] - '0');
+                    if (commaCount++ == COMMAS_BEFORE_BIRTH_DATE) {
+                        int month = (data[i + FIRST_CHAR_OF_MONTH_IN_DATE] - '0') * 10 +
+                                    (data[i + SECOND_CHAR_OF_MONTH_IN_DATE] - '0');
+                        int day = (data[i + FIRST_CHAR_OF_DAY_IN_DATE] - '0') * 10 +
+                                  (data[i + SECOND_CHAR_OF_DAY_IN_DATE] - '0');
                         int calenderIndex = (month - 1) * 31 + (day - 1);
                         personsPerBirthDay[calenderIndex]++;
-                        i += 13;
+                        i += NUMBER_OF_CHARS_OF_DATE_AND_BEHIND;
                     }
                 }
             }

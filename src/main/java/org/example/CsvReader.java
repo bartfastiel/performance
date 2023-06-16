@@ -21,20 +21,21 @@ public class CsvReader {
 
     @Benchmark
     public static void run() {
-        List<List<String>> records = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader("people-1000.csv"))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] values = line.split(",");
-                records.add(Arrays.asList(values));
-            }
-        } catch (IOException e) {
-            throw new NoSuchElementException("Cannot read CSV file", e);
-        }
+        List<List<String>> records = readCsvData();
         List<String> titles = records.remove(0);
         List<Person> persons = new ArrayList<>();
         Map<Person, Integer> partyFriends = new HashMap<>();
         int maximumPartyFriends = 0;
+        maximumPartyFriends = getMaximumPartyFriends(records, persons, partyFriends, maximumPartyFriends);
+        System.out.println("Max PartyFriends: "+maximumPartyFriends);
+        for (Map.Entry<Person, Integer> entry : partyFriends.entrySet()) {
+            if (entry.getValue() == maximumPartyFriends) {
+                System.out.println(entry.getKey());
+            }
+        }
+    }
+
+    private static int getMaximumPartyFriends(List<List<String>> records, List<Person> persons, Map<Person, Integer> partyFriends, int maximumPartyFriends) {
         for (List<String> record : records) {
             Person p = new Person(
                     record.get(0),
@@ -65,11 +66,20 @@ public class CsvReader {
                 }
             }
         }
-//        System.out.println("Max PartyFriends: "+maximumPartyFriends);
-//        for (Map.Entry<Person, Integer> entry : partyFriends.entrySet()) {
-//            if (entry.getValue() == maximumPartyFriends) {
-//                System.out.println(entry.getKey());
-//            }
-//        }
+        return maximumPartyFriends;
+    }
+
+    private static List<List<String>> readCsvData() {
+        List<List<String>> records = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader("people-1000.csv"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                records.add(Arrays.asList(values));
+            }
+        } catch (IOException e) {
+            throw new NoSuchElementException("Cannot read CSV file", e);
+        }
+        return records;
     }
 }

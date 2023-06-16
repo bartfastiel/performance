@@ -24,29 +24,36 @@ public class CsvReader {
         int[] personsPerBirthDay = new int[12 * 31];
 
         int maximumPartyFriends = 0;
-        String winner = null;
+        char[] winner = null;
 
-        try (BufferedReader br = new BufferedReader(new FileReader("people-2000000.csv"))) {
-            String line;
+        try (BufferedReader br = new BufferedReader(new FileReader("people-2000000.csv"), 1024 * 1024 * 300)) {
             br.readLine();
-            while ((line = br.readLine()) != null) {
-                String[] values = line.split(",");
-                String birthDate = values[7];
 
-                int month = Integer.parseInt(birthDate.substring(5, 7));
-                int day = Integer.parseInt(birthDate.substring(8));
-                int calenderIndex = (month - 1) * 31 + (day - 1);
+            int commaCount = 0;
+            char[] dateCharsBuffer = new char[5];
 
-                personsPerBirthDay[calenderIndex]++;
-
-                if (maximumPartyFriends < personsPerBirthDay[calenderIndex]) {
-                    maximumPartyFriends = personsPerBirthDay[calenderIndex];
-                    winner = birthDate;
+            int charRead;
+            while ((charRead = br.read()) != -1) {
+                if (charRead == '\n') {
+                    commaCount = 0;
+                } else if (charRead == ',') {
+                    if (++commaCount == 7) {
+                        br.skip(5);
+                        br.read(dateCharsBuffer, 0, 5);
+                        int month = (dateCharsBuffer[0] - '0') * 10 + (dateCharsBuffer[1] - '0');
+                        int day = (dateCharsBuffer[3] - '0') * 10 + (dateCharsBuffer[4] - '0');
+                        int calenderIndex = (month - 1) * 31 + (day - 1);
+                        personsPerBirthDay[calenderIndex]++;
+                        if (maximumPartyFriends < personsPerBirthDay[calenderIndex]) {
+                            maximumPartyFriends = personsPerBirthDay[calenderIndex];
+                            winner = dateCharsBuffer;
+                        }
+                    }
                 }
             }
         } catch (IOException e) {
             throw new NoSuchElementException("Cannot read CSV file", e);
         }
-        return winner.substring(5);
+        return new String(winner);
     }
 }

@@ -13,9 +13,12 @@ import java.util.concurrent.TimeUnit;
 @Fork(1)
 public class CsvReader {
 
+    public static final int CHARACTERS_IN_TITLE = 76;
+    public static final int FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN = 15;
+
     public static void main(String[] args) throws IOException {
         org.openjdk.jmh.Main.main(new String[]{"org.example.CsvReader"});
-        //System.out.println(run());
+        // System.out.println(run());
     }
 
     @Benchmark
@@ -23,14 +26,15 @@ public class CsvReader {
         int[] personsPerBirthDay = new int[12 * 31];
         try (var r = new FileInputStream("people-2000000.csv")) {
             byte[] data = r.readAllBytes();
-            int commaCount = -100;
-            for (int i = 0; i < data.length; i++) {
+            int commaCount = 0;
+            for (int i = CHARACTERS_IN_TITLE + FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN; i < data.length; i++) {
                 if (data[i] == '\n') {
                     commaCount = 0;
+                    i += FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN;
                 } else if (data[i] == ',') {
-                    if (commaCount++ == 6) {
-                        int month = (data[i+6] - '0') * 10 + (data[i+7] - '0');
-                        int day = (data[i+9] - '0') * 10 + (data[i+10] - '0');
+                    if (commaCount++ == 5) {
+                        int month = (data[i + 6] - '0') * 10 + (data[i + 7] - '0');
+                        int day = (data[i + 9] - '0') * 10 + (data[i + 10] - '0');
                         int calenderIndex = (month - 1) * 31 + (day - 1);
                         personsPerBirthDay[calenderIndex]++;
                         i += 13;

@@ -55,7 +55,7 @@ public class CsvReader {
     }
 
     private static List<List<String>> readCsvData() {
-        return readCsvDataBufferedOld();
+        return readShortenedFile();
     }
 
     /**
@@ -106,6 +106,25 @@ public class CsvReader {
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
                 records.add(Arrays.asList(values));
+            }
+        } catch (IOException e) {
+            throw new NoSuchElementException("Cannot read CSV file", e);
+        }
+        return records;
+    }
+
+    /**
+     * Benchmark      Mode  Cnt  Score   Error  Units
+     * CsvReader.run  avgt   50  0,390 ± 0,009   s/op
+     */
+    private static List<List<String>> readShortenedFile() {
+        List<List<String>> records = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader("people-2000000-shortened.csv"))) {
+            String line;
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                records.add(Arrays.asList(null, null, null, null, null, null, null, values[1]));
             }
         } catch (IOException e) {
             throw new NoSuchElementException("Cannot read CSV file", e);

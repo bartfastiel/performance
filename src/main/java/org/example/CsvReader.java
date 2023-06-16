@@ -30,26 +30,30 @@ public class CsvReader {
     @Benchmark
     public static String run() {
         int[] personsPerBirthDay = new int[12 * 31];
+
+        byte[] data;
         try (var r = new FileInputStream("people-2000000.csv")) {
-            byte[] data = r.readAllBytes();
-            int commaCount = 0;
-            for (int i = CHARACTERS_IN_TITLE + FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN; i < data.length; i++) {
-                if (data[i] == '\n') {
-                    commaCount = 0;
-                    i += FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN;
-                } else if (data[i] == ',' && commaCount++ == COMMAS_BEFORE_BIRTH_DATE) {
-                    int month = (data[i + FIRST_CHAR_OF_MONTH_IN_DATE] - '0') * 10 +
-                                (data[i + SECOND_CHAR_OF_MONTH_IN_DATE] - '0');
-                    int day = (data[i + FIRST_CHAR_OF_DAY_IN_DATE] - '0') * 10 +
-                              (data[i + SECOND_CHAR_OF_DAY_IN_DATE] - '0');
-                    int calenderIndex = (month - 1) * 31 + (day - 1);
-                    personsPerBirthDay[calenderIndex]++;
-                    i += NUMBER_OF_CHARS_OF_DATE_AND_BEHIND;
-                }
-            }
+            data = r.readAllBytes();
         } catch (IOException e) {
             throw new NoSuchElementException("Cannot read CSV file", e);
         }
+
+        int commaCount = 0;
+        for (int i = CHARACTERS_IN_TITLE + FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN; i < data.length; i++) {
+            if (data[i] == '\n') {
+                commaCount = 0;
+                i += FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN;
+            } else if (data[i] == ',' && commaCount++ == COMMAS_BEFORE_BIRTH_DATE) {
+                int month = (data[i + FIRST_CHAR_OF_MONTH_IN_DATE] - '0') * 10 +
+                            (data[i + SECOND_CHAR_OF_MONTH_IN_DATE] - '0');
+                int day = (data[i + FIRST_CHAR_OF_DAY_IN_DATE] - '0') * 10 +
+                          (data[i + SECOND_CHAR_OF_DAY_IN_DATE] - '0');
+                int calenderIndex = (month - 1) * 31 + (day - 1);
+                personsPerBirthDay[calenderIndex]++;
+                i += NUMBER_OF_CHARS_OF_DATE_AND_BEHIND;
+            }
+        }
+
         int max = 0;
         int maxIndex = 0;
         for (int i = 0; i < personsPerBirthDay.length; i++) {

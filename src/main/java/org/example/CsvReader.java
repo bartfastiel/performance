@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.MonthDay;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -25,18 +26,14 @@ public class CsvReader {
         List<String> titles = records.remove(0);
         List<Person> persons = new ArrayList<>();
         Map<Person, Integer> partyFriends = new HashMap<>();
-        int maximumPartyFriends = 0;
-        maximumPartyFriends = getMaximumPartyFriends(records, persons, partyFriends, maximumPartyFriends);
-        System.out.println("Max PartyFriends: "+maximumPartyFriends);
-        for (Map.Entry<Person, Integer> entry : partyFriends.entrySet()) {
-            if (entry.getValue() == maximumPartyFriends) {
-                System.out.println(entry.getKey());
-            }
-        }
+        MonthDay biggestParty = getMaximumPartyFriends(records, persons, partyFriends);
+        // System.out.println("Biggest party is on " + biggestParty);
     }
 
-    private static int getMaximumPartyFriends(List<List<String>> records, List<Person> persons, Map<Person, Integer> partyFriends, int maximumPartyFriends) {
+    private static MonthDay getMaximumPartyFriends(List<List<String>> records, List<Person> persons, Map<Person, Integer> partyFriends) {
+        Map<MonthDay, List<Person>> personsPerBirthDay = new HashMap<>();
         for (List<String> record : records) {
+            LocalDate birthDate = LocalDate.parse(record.get(7));
             Person p = new Person(
                     record.get(0),
                     record.get(1),
@@ -45,34 +42,33 @@ public class CsvReader {
                     record.get(4),
                     record.get(5),
                     record.get(6),
-                    LocalDate.parse(record.get(7)),
+                    birthDate,
                     record.get(8)
             );
             persons.add(p);
-            for (List<String> record2 : records) {
-                int numberOfPersonsWithSameBirthDate = 0;
-                LocalDate parsed = LocalDate.parse(record2.get(7));
-                if(
-                        p.dateOfBirth().getDayOfMonth() == parsed.getDayOfMonth()
-                        &&
-                        p.dateOfBirth().getMonthValue() == parsed.getMonthValue()
-                )
-                {
-                    numberOfPersonsWithSameBirthDate++;
-                };
-                partyFriends.put(p, numberOfPersonsWithSameBirthDate);
+            MonthDay monthDay = MonthDay.from(birthDate);
 
-                if (numberOfPersonsWithSameBirthDate > maximumPartyFriends) {
-                    maximumPartyFriends = numberOfPersonsWithSameBirthDate;
-                }
+            personsPerBirthDay
+                    .computeIfAbsent(monthDay, k -> new ArrayList<>())
+                    .add(p);
+        }
+
+        int maximumPartyFriends = 0;
+        Map.Entry<MonthDay, List<Person>> winner = null;
+        for (Map.Entry<MonthDay, List<Person>> entry : personsPerBirthDay.entrySet()) {
+            int partyPersons = entry.getValue().size();
+            if (maximumPartyFriends < partyPersons) {
+                maximumPartyFriends = partyPersons;
+                winner = entry;
             }
         }
-        return maximumPartyFriends;
+
+        return winner.getKey();
     }
 
     private static List<List<String>> readCsvData() {
         List<List<String>> records = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader("people-1000.csv"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("people-2000000.csv"))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");

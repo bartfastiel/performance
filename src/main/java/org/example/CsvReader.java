@@ -22,11 +22,11 @@ public class CsvReader {
     public static final int FIRST_CHAR_OF_DAY_IN_DATE = 9;
     public static final int SECOND_CHAR_OF_DAY_IN_DATE = 10;
     public static final int NUMBER_OF_CHARS_OF_DATE_AND_BEHIND = 13;
-    public static final int NUMBER_OF_PARALLEL_THREADS = 10;
+    public static final int NUMBER_OF_PARALLEL_THREADS = 32;
 
     public static void main(String[] args) throws IOException {
         org.openjdk.jmh.Main.main(new String[]{"org.example.CsvReader"});
-        // System.out.println(run());
+        //  System.out.println(run());
     }
 
     @Benchmark

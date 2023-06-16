@@ -32,6 +32,8 @@ public class CsvReader {
 
     private static MonthDay getMaximumPartyFriends(List<List<String>> records, List<Person> persons, Map<Person, Integer> partyFriends) {
         Map<MonthDay, List<Person>> personsPerBirthDay = new HashMap<>();
+        int maximumPartyFriends = 0;
+        MonthDay winner = null;
         for (List<String> record : records) {
             LocalDate birthDate = LocalDate.parse(record.get(7));
             Person p = new Person(
@@ -48,22 +50,15 @@ public class CsvReader {
             persons.add(p);
             MonthDay monthDay = MonthDay.from(birthDate);
 
-            personsPerBirthDay
-                    .computeIfAbsent(monthDay, k -> new ArrayList<>())
-                    .add(p);
-        }
+            List<Person> partyPersons = personsPerBirthDay.computeIfAbsent(monthDay, k -> new ArrayList<>());
+            partyPersons.add(p);
 
-        int maximumPartyFriends = 0;
-        Map.Entry<MonthDay, List<Person>> winner = null;
-        for (Map.Entry<MonthDay, List<Person>> entry : personsPerBirthDay.entrySet()) {
-            int partyPersons = entry.getValue().size();
-            if (maximumPartyFriends < partyPersons) {
-                maximumPartyFriends = partyPersons;
-                winner = entry;
+            if (maximumPartyFriends < partyPersons.size()) {
+                maximumPartyFriends = partyPersons.size();
+                winner = monthDay;
             }
         }
-
-        return winner.getKey();
+        return winner;
     }
 
     private static List<List<String>> readCsvData() {

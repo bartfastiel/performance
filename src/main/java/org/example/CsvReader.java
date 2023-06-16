@@ -26,20 +26,19 @@ public class CsvReader {
 
     @Benchmark
     public static String run() {
-        List<List<String>> records = readCsvData();
+        List<String> records = readCsvData();
         String biggestParty = getMaximumPartyFriends(records);
         return biggestParty;
         // System.out.println("Biggest party is on " + biggestParty);
     }
 
-    private static String getMaximumPartyFriends(List<List<String>> records) {
+    private static String getMaximumPartyFriends(List<String> records) {
         int[] personsPerBirthDay = new int[12 * 31];
 
         int maximumPartyFriends = 0;
         String winner = null;
-        for (List<String> record : records) {
+        for (String birthDate : records) {
 
-            String birthDate = record.get(7);
             int month = Integer.parseInt(birthDate.substring(5, 7));
             int day = Integer.parseInt(birthDate.substring(8));
             int calenderIndex = (month - 1) * 31 + (day - 1);
@@ -48,13 +47,13 @@ public class CsvReader {
 
             if (maximumPartyFriends < personsPerBirthDay[calenderIndex]) {
                 maximumPartyFriends = personsPerBirthDay[calenderIndex];
-                winner = record.get(7).substring(5);
+                winner = birthDate.substring(5);
             }
         }
         return winner;
     }
 
-    private static List<List<String>> readCsvData() {
+    private static List<String> readCsvData() {
         return readShortenedFile();
     }
 
@@ -115,16 +114,16 @@ public class CsvReader {
 
     /**
      * Benchmark      Mode  Cnt  Score   Error  Units
-     * CsvReader.run  avgt   50  0,390 ± 0,009   s/op
+     * CsvReader.run  avgt   50  0,292 ± 0,007   s/op
      */
-    private static List<List<String>> readShortenedFile() {
-        List<List<String>> records = new ArrayList<>();
+    private static List<String> readShortenedFile() {
+        List<String> records = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader("people-2000000-shortened.csv"))) {
             String line;
             br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
-                records.add(Arrays.asList(null, null, null, null, null, null, null, values[1]));
+                records.add(values[1]);
             }
         } catch (IOException e) {
             throw new NoSuchElementException("Cannot read CSV file", e);

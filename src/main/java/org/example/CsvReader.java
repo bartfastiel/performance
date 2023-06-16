@@ -2,11 +2,13 @@ package org.example;
 
 import org.openjdk.jmh.annotations.*;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipFile;
 
 @BenchmarkMode(Mode.AverageTime)
 @Warmup(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
@@ -29,7 +31,7 @@ public class CsvReader {
     }
 
     private static String getMaximumPartyFriends(List<List<String>> records, List<Person> persons, Map<Person, Integer> partyFriends) {
-        Map<String, List<Person>> personsPerBirthDay = new HashMap<>();
+        Map<String, List<Person>> personsPerBirthDay = new HashMap<>(366);
         int maximumPartyFriends = 0;
         String winner = null;
         for (List<String> record : records) {

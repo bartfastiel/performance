@@ -29,15 +29,21 @@ public class CsvReader {
 
     @Benchmark
     public static String run() {
-        int[] personsPerBirthDay = new int[12 * 31];
+        byte[] data = readFile();
+        int[] personsPerBirthDay = createHistogram(data);
+        return findBiggestParty(personsPerBirthDay);
+    }
 
-        byte[] data;
+    private static byte[] readFile() {
         try (var r = new FileInputStream("people-2000000.csv")) {
-            data = r.readAllBytes();
+            return r.readAllBytes();
         } catch (IOException e) {
             throw new NoSuchElementException("Cannot read CSV file", e);
         }
+    }
 
+    private static int[] createHistogram(byte[] data) {
+        int[] personsPerBirthDay = new int[12 * 31];
         int commaCount = 0;
         for (int i = CHARACTERS_IN_TITLE + FIRST_CHARS_THAT_CONTAIN_ONE_COMMA_FOR_CERTAIN; i < data.length; i++) {
             if (data[i] == '\n') {
@@ -53,7 +59,10 @@ public class CsvReader {
                 i += NUMBER_OF_CHARS_OF_DATE_AND_BEHIND;
             }
         }
+        return personsPerBirthDay;
+    }
 
+    private static String findBiggestParty(int[] personsPerBirthDay) {
         int max = 0;
         int maxIndex = 0;
         for (int i = 0; i < personsPerBirthDay.length; i++) {

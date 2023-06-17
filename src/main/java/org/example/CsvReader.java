@@ -23,10 +23,10 @@ public class CsvReader {
     public static final int SECOND_CHAR_OF_DAY_IN_DATE = 10;
     public static final int NUMBER_OF_CHARS_OF_DATE_AND_BEHIND = 14;
     public static final int NUMBER_OF_PARALLEL_THREADS = 32;
+    public static final int HISTOGRAM_SIZE = 12 * 31;
 
     public static void main(String[] args) throws IOException {
         org.openjdk.jmh.Main.main(new String[]{"org.example.CsvReader"});
-        //  System.out.println(run());
     }
 
     @Benchmark
@@ -43,7 +43,7 @@ public class CsvReader {
                 })
                 .mapToObj(chunkStart -> createHistogram(data, chunkStart, approximateChunkSize))
                 .reduce((arr1, arr2) ->
-                        IntStream.range(0, Math.min(arr1.length, arr2.length))
+                        IntStream.range(0, HISTOGRAM_SIZE)
                                 .map(i -> arr1[i] + arr2[i])
                                 .toArray()
                 )
@@ -61,7 +61,7 @@ public class CsvReader {
     }
 
     private static int[] createHistogram(byte[] data, int chunkStart, int approximateChunkSize) {
-        int[] personsPerBirthDay = new int[12 * 31];
+        int[] personsPerBirthDay = new int[HISTOGRAM_SIZE];
         int commaCount = 0;
         int approximateChunkEnd = chunkStart + approximateChunkSize;
         int dataLength = data.length;
